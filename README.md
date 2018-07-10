@@ -1,0 +1,4 @@
+- Cairo-Dock
+- CompizConfig
+- KDE-Connect
+- KeePass
