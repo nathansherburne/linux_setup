@@ -1,20 +1,27 @@
-" Uncomment the following to have Vim jump to the last position when                                                       
-" reopening a file
+" Basic Settings ----------------------- {{{
+" Jump to the last position when reopening a file.
 au BufReadPost * if line("'\"") > 0 && line("'\"") <= line("$")
     \| exe "normal! g'\"" | endif
-
-"""Status Line"""
-set laststatus=2
-set statusline=%f
 
 """ Colors """
 colorscheme evening
 
-""" Mappings """
+" Folding --------------------------- {{{
+set foldmethod=marker
+set foldlevelstart=0
+" }}}
+
+" Status Line ----------------------- {{{
+set laststatus=2
+set statusline=%f
+" }}}
+" }}}
+
+" Mappings ----------------------- {{{
 let mapleader = ","
 let maplocalleader = "\\"
 
-" Normal Mode "
+" Normal "----------------------- {{{
 nnoremap <leader>ev :vsplit $MYVIMRC<cr>
 nnoremap <leader>sv :source $MYVIMRC<cr>
 nnoremap <leader>_ dd<Up>P
@@ -25,24 +32,28 @@ nnoremap <leader>" ea"<esc>bi"<esc>lel
 nnoremap <leader>' ea'<esc>bi'<esc>lel
 nnoremap H 0
 nnoremap L $
+" }}}
 
-" Insert Mode "
+" Insert "----------------------- {{{
 inoremap <c-u> <esc>mxviwU<esc>`xa
 inoremap <c-d> <esc>ddi
 inoremap <BS> <Left><Del>
 inoremap jk <esc>
+" }}}
 
-" Visual Mode "
+" Visual "----------------------- {{{
 vnoremap <leader>" <esc>`>a"<esc>`<i"<esc>`>l
 vnoremap <leader>' <esc>`>a'<esc>`<i'<esc>`>l
 vnoremap <Tab> :s/^/	<CR>gv
 vnoremap <S-Tab> :s/^	/<CR>gv
+" }}}
 
-""" Operator-Pending Mappings """
+" Operator-Pending Mappings ----------------------- {{{
 onoremap in( :<c-u>normal! f(vi(<CR>
 onoremap il( :<c-u>normal! F)vi(<CR>
+" }}}
 
-" Disabled "
+" Disable ----------------------- {{{
 "inoremap <Right> <nop>
 "inoremap <Up> <nop>
 "vnoremap <Left> <nop>
@@ -54,14 +65,24 @@ onoremap il( :<c-u>normal! F)vi(<CR>
 "nnoremap <Up> <nop>
 "nnoremap <Left> <nop>
 "nnoremap <Down> <nop>
+" }}}
+" }}}
 
-""" Abbreviations """
+" Abbreviations ----------------------- {{{
 iabbrev @@ sherburne.nathan@gmail.com
+" }}}
 
-""" Auto Commands """
+" Auto Commands ----------------------- {{{
 filetype on
 
-" HTML "
+" Vimscript file settings ---------------------- {{{
+augroup filetype_vim
+    autocmd!
+    autocmd FileType vim setlocal foldmethod=marker
+augroup END
+" }}}
+
+" HTML ----------------------- {{{
 augroup htmlgroup
 	autocmd!
 	autocmd BufNewFile,BufRead *.html setlocal nowrap
@@ -70,8 +91,9 @@ augroup htmlgroup
 	autocmd FileType html :iabbrev <buffer> <p> <p><CR><CR></p><Up><Tab><C-R>=Eatchar('\m.$')<CR>
 	autocmd FileType html nnoremap <buffer> <localleader>f Vatzf
 augroup END
+" }}}
 
-" Python "
+" Python ----------------------- {{{
 augroup pygroup
 	autocmd!
 	autocmd FileType python nnoremap <buffer> <localleader>c I#<esc>
@@ -82,28 +104,35 @@ augroup pygroup
 	autocmd FileType python setlocal expandtab
 	autocmd FileType python :iabbrev <buffer> iff if:<left>
 augroup END
+" }}}
 
+" JSON ------------------------- {{{
 augroup jsongroup
 	autocmd!
 	autocmd FileType json set tabstop=4
 	autocmd FileType json set shiftwidth=4
 	autocmd FileType json set expandtab
 augroup END
+" }}}
 
+" Shell -------------------------------- {{{
 augroup shgroup
 	autocmd!
 	autocmd FileType sh set tabstop=4
 	autocmd FileType sh set shiftwidth=4
 	autocmd FileType sh set expandtab
 augroup END
+" }}}
 
-" Javascript "
+" Javascript ----------------------- {{{
 augroup jsgroup
 	autocmd!
 	autocmd FileType javascript nnoremap <buffer> <localleader>c I//<esc>
 augroup END
+" }}}
+" }}}
 
-""" Functions """
+" Functions ----------------------- {{{
 func! Eatchar(pat)
   let c = nr2char(getchar(0))
   return (c =~ a:pat) ? '' : c
@@ -150,8 +179,9 @@ function! TabEditFile(filename, refresh)
     exec "tabedit ".a:filename
   endif
 endfunc
+" }}}
 
-""" Global Marks File """
+" Global Marks File ----------------------- {{{
 func! PopulateMarksFile()
   split tmpfile_qeicmdvs
   redir! >~/.vim/global_marks.txt
@@ -187,3 +217,4 @@ augroup globmarksgroup
 augroup END
 
 
+" }}}
