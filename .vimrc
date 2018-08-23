@@ -3,6 +3,10 @@
 au BufReadPost * if line("'\"") > 0 && line("'\"") <= line("$")
     \| exe "normal! g'\"" | endif
 
+"""Status Line"""
+set laststatus=2
+set statusline=%f
+
 """ Colors """
 colorscheme evening
 
