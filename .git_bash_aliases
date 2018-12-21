@@ -1,0 +1,110 @@
+IN_GIT_SESH=1
+
+# Clear console before executing every command.
+preexec () {
+  clear
+}
+preexec_invoke_exec () {
+    [ -n "$COMP_LINE" ] && return                     # do nothing if completing
+    [ "$BASH_COMMAND" = "$PROMPT_COMMAND" ] && return # don't cause a preexec for $PROMPT_COMMAND
+    local this_command=`history 1 | sed -e "s/^[ ]*[0-9]*[ ]*//g"`; # obtain the command from the history, removing the history number at the beginning
+    preexec "$this_command"
+}
+trap 'preexec_invoke_exec' DEBUG
+
+# Get horizontal line the width of the terminal
+hline() {
+  printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -
+}
+
+no_last_command() {
+  HISTCMD_previous=$(fc -l -1); HISTCMD_previous=${HISTCMD_previous%%$'[\t ]'*}
+    if [[ -z $HISTCMD_before_last ]]; then
+        # initial prompt
+	echo "Hello there"
+    elif [[ $HISTCMD_before_last = "$HISTCMD_previous" ]]; then
+        # cancelled prompt
+	clear
+    else
+        # a command was run
+	!!
+    fi
+    HISTCMD_before_last=$HISTCMD_previous
+}
+
+export PROMPT_COMMAND='PS1="\n$(hline)$(date)\n"$(parse_venv)"\[\e[1;32m\]\u@\[\e[1;32m\]\h \[\e[m\]\[\e[1;34m\]"$(python ~/.short.pwd.py)"\[\e[m\]\$(format_git_branch)\[\033[00m\]\n> "'
+
+alias s="git status"
+alias a="git add"
+alias d="git diff"
+alias cmm="git commit -m"
+alias p="git push"
+alias fo="git fetch origin"
+alias b="git branch"
+alias cm="git commit"
+alias cma="git commit --amend"
+alias l="git log"
+alias pop="git stash pop"
+alias ri="git rebase -i"
+alias pb="parse_git_branch | xargs git push origin"
+alias cb="parse_git_branch"
+alias ss="git status --short"
+alias lss="git status --short | ack -o '(?<=M  ).*'"
+alias lsus="git status --short | ack -o '(?<= M ).*'"
+alias lsut="git status --short | ack -o '(?<=\?\? ).*' | tr '\n' ' '"
+alias grog="git log --graph --abbrev-commit --decorate --all --format=format:\"%C(bold blue)%h%C(reset) - %C(bold cyan)%aD%C(dim white) - %an%C(reset) %C(bold green)(%ar)%C(reset)%C(bold yellow)%d%C(reset)%n %C(white)%s%C(reset)\""
+
+eut() {
+    xdotool search --name 'right:0:' windowactivate
+    tmux respawn-pane -t right:0.0 -k "vim -p $(lsut); pwd > ~/.start_dir; bash"
+}
+
+eus() {
+    xdotool search --name 'right:0:' windowactivate
+    tmux respawn-pane -t right:0.0 -k "vim -p $(lsus); pwd > ~/.start_dir; bash"
+}
+
+es() {
+    xdotool search --name 'right:0:' windowactivate
+    tmux respawn-pane -t right:0.0 -k "vim -p $(lss); pwd > ~/.start_dir; bash"
+}
+
+grep_git_branch() {
+  git branch | ack -o "(?<=  ).*$1.*"
+}
+
+ck() {
+  branch=$(grep_git_branch $1 | tr '\n' ' ')
+  if [[ $branch =~ " .* " ]]; then
+    echo "Too many results:"
+    grep_git_branch $1
+  elif [ "$branch" = "" ]; then
+    # No branches with that pattern, so just run it.
+    git checkout $1
+  else
+    git checkout $branch
+  fi
+}
+
+alias grep_fnames="ack -o '^.+?(?=\:)'"
+alias grep_lnums="ack -o '(?<=\:)[0-9]+(?=\:)'"
+
+rm_git_grep() {
+  fnames=$(git grep $1 | sed '1!G;h;$!d' | ack -o '^.+?(?=\:)' | tr "\n" ",")
+  lnums=$(git grep $1 | sed '1!G;h;$!d' | ack -o '(?<=\:)[0-9]+(?=\:)' | tr "\n" ",")
+
+  IFS=',' read -r -a lnums_arr <<< "$lnums"
+  IFS=',' read -r -a fnames_arr <<< "$fnames"
+
+  i=0
+  for use in "${lnums_arr[@]}";
+  do
+    num="${lnums_arr[$i]}"
+    fname="${fnames_arr[$i]}"
+
+    # Remove the line from the file.
+    sed -i "${num}d" $fname
+
+    i=$((i+1))
+  done
+}

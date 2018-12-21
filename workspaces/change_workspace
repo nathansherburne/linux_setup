@@ -1,0 +1,12 @@
+#!/bin/bash
+
+wsnum=$1
+
+cd /home/nathan/util/workspaces/
+./$wsnum.sh
+cd -
+
+# Linux top bar gets in the way of inactive fullscreen windows. Activate both
+# windows after moving workspaces to put them both on top.
+xdotool key alt+Tab
+xdotool key alt+Tab
